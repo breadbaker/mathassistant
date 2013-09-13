@@ -1,0 +1,5 @@
+Ruby what is one plus one
+	dictator 'one add one'
+<assistant,assistance> what is (WORD a) (WORD op) (WORD b)
+	dictator "$a$ $op$ $b$"
+

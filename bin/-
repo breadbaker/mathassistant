@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+require 'fileutils'
+include FileUtils
+require 'tk'
+root = TkRoot.new { title "First Dialog"}
+TkLabel.new(root) do
+	text 'Hello World'
+	pack { padx 15; pady 15: side 'left'}
+end
+Tk.mainloop
+
+log = '/home/dan/rubyscripts/dictate.txt'	
+text = File.read(log)
+text = text+ "dictate  #{ARGV[0]} has a length of #{ARGV[0].length} "
+File.open(log, 'w') {|file| file.puts text}
+

@@ -1,0 +1,91 @@
+#!/usr/bin/env ruby
+require 'fileutils'
+include FileUtils
+#require 'tk'
+#root = TkRoot.new { title "First Dialog"}
+#TkLabel.new(root) do
+#	text 'Hello World'
+#	pack { padx 15; pady 15: side 'left'}
+#end
+#Tk.mainloop
+
+#hash = {'one'=>1,'two'=>2,'three'=>3,'four'=>4,'five'=>5,'six'=>6,
+#'seven'=>7,'eight'=>8,'nine'=>9,'zero'=>0}
+#r = ''
+
+#vars = ARGV
+#vars.each do |v|
+module ReadLast
+	require 'fileutils'
+	include FileUtils
+	LASTVAR = '/home/dan/rubyscripts/reader.txt'
+	LOGFILE = '/home/dan/rubyscripts/logfile.txt'
+
+	def getLast
+		File.read(LASTVAR)
+	end
+
+	def log args
+		log = File.read(LOGFILE)
+		log = log + "request was: #{args.to_s}"
+#\n var1: #{v1} \n var2: #{v2} \n result: #{r}"
+		File.open(LOGFILE,'w'){|file| file.puts log}
+	end
+
+	def saveResult v
+		File.open(LASTVAR, 'w') {|file| file.puts v}
+	end
+end
+
+class Saver
+	include ReadLast
+	require "rubygems"
+	require "festivaltts4r"
+	def initialize args
+		log(args)
+		@op = args[0]
+		@var1 = setVar(args[1])
+		@var2 = setVar(args[2])
+	end
+
+	def setVar v
+		if (v.downcase == 'last')
+			v = getLast
+		end
+		v.to_i
+	end
+	def add
+		@var1 + @var2
+	end
+
+	def minus 
+		@var1 - @var2
+	end
+
+	def times
+		@var1 * @var2
+	end
+
+	def divide
+		@var1 / @var2
+	end
+
+	def speak v
+		"#{@var1} #{@op} #{@var2} is #{v}".to_speech
+	end
+
+	def compute
+		result = 'fail'
+		if(respond_to? @op)
+			result = send(@op)
+		end
+		log(@op,@var1,@var2,result)
+		speak(result)
+	end
+end
+
+var = Saver.new(ARGV)
+
+var.compute	
+
+

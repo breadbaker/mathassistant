@@ -1,0 +1,7 @@
+name = dictator
+version = 1.9
+file = dictator
+configs = settings.conf
+author =  Dan
+description = 
+actions =

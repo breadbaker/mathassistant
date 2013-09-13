@@ -1,0 +1,145 @@
+#!/usr/bin/env ruby
+require 'fileutils'
+include FileUtils
+#require 'tk'
+#root = TkRoot.new { title "First Dialog"}
+#TkLabel.new(root) do
+#	text 'Hello World'
+#	pack { padx 15; pady 15: side 'left'}
+#end
+#Tk.mainloop
+
+#hash = {'one'=>1,'two'=>2,'three'=>3,'four'=>4,'five'=>5,'six'=>6,
+#'seven'=>7,'eight'=>8,'nine'=>9,'zero'=>0}
+#r = ''
+
+#vars = ARGV
+#vars.each do |v|
+module ReadLast
+	require 'fileutils'
+	include FileUtils
+	LASTVAR = '/home/dan/rubyscripts/reader.txt'
+	LOGFILE = '/home/dan/rubyscripts/logfile.txt'
+
+	def getLast
+		File.read(LASTVAR)
+	end
+
+	def log args
+		log = File.read(LOGFILE)
+		log = log + "request was: #{args.to_s}"
+#\n var1: #{v1} \n var2: #{v2} \n result: #{r}"
+		File.open(LOGFILE,'w'){|file| file.puts log}
+	end
+
+	def saveResult v
+		File.open(LASTVAR, 'w') {|file| file.puts v}
+	end
+end
+
+class Saver
+	include ReadLast
+	require "rubygems"
+	require "festivaltts4r"
+	NUMBERS = {
+		'0'=>'0','for'=>'4','one'=>'1','to'=>'2','two'=>'2','three'=>'3','four'=>'4','five'=>'5','six'=>'6','seven'=>'7','eight'=>'8','nine'=>'9','ten'=>'10','eleven'=>'11','twelve'=>'12','thirteen'=>'13','fourteen'=>'14','fifteen'=>'15','sixteen'=>'16','seventeen'=>'17','eighteen'=>'18','nineteen'=>'19'
+	}
+	TENS = {'twenty'=>'2','thirty'=>'3','fourty'=>'4','fifty'=>'5','sixty'=>'6','seventy'=>'7','eighty'=>'8','ninety'=>'9'}
+	ZERO_COUNTS = {'hundred'=>2,'thousand'=>3,'million'=>6}
+	OPERATIONS = {
+		'ad'=> 'add', 'add'=>'add','plus'=>'add',
+		'minus'=>'minus','subtract'=>'minus',
+		'times'=>'times','divide'=>'divide'}
+	HUMAN_FILLER = ['a','and']
+	def initialize args
+		log(args)
+
+		@a = args[0].split(' ')
+		@v1 = getVar 
+		@op = OPERATIONS[@a.shift]
+		@v2 = getVar
+		puts @a
+		puts @v1
+		puts @op
+		puts @v2
+		compute
+
+	end
+
+	def getVar
+		v = ''
+		while true
+			e = @a.shift
+			if  (e == nil || OPERATIONS.has_key?(e))
+				@a.unshift e
+				return v.to_i
+			elsif e == 'that'
+			  v = getLast
+			else
+				v += getNumber(e, 1)
+			end
+		end#
+		v.to_i
+	end
+
+	def getNumber( el, cond)
+		v = ''
+		while cond>0
+			if HUMAN_FILLER.include?(el)
+				el @a.shift
+			end
+
+			if (el.to_i != 0)
+				v += el.to_s
+			elsif  NUMBERS.has_key?(el)
+				v += NUMBERS[el]
+			elsif TENS.has_key? el
+				v += TENS[el]
+				e = @a.shift
+				v += getNumber(e, 1)
+				cond -= 1
+			elsif ZERO_COUNTS.has_key?(el)
+				v += getNumber(@a.shift,ZERO_COUNTS[el])
+			elsif (el == nil||OPERATIONS.has_key?(el))
+				(cond).times do
+					v+='0'
+				end
+				@a.unshift(el)
+				cond = 1
+			end
+			cond -= 1
+		end
+		v
+	end
+
+	def setVar v
+		if (v.downcase == 'last')
+			v = getLast
+		end
+		v.to_i
+	end
+	def add
+		@v1 + @v2
+	end
+	def minus 
+		@v1 - @v2
+	end
+	def times
+		@v1 * @v2
+	end
+	def divide
+		@v1 / @v2
+	end
+	def speak v
+		"#{@v1} #{@op} #{@v2} is #{v}".to_speech
+	end
+	def compute
+		result =  send(@op)
+		#log(@op,@v1,@v2,result)
+		speak(result)
+		saveResult(result)
+	end
+end
+
+#var.compute	
+var = Saver.new(ARGV)
